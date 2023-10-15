@@ -1,66 +1,11 @@
-## Foundry
+## Delegate Call Proxy
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+There are 2 contracts, Store.sol and Proxy.sol.
 
-Foundry consists of:
+This is a simple example of using delegate call on Store.sol contract using Proxy.sol.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Proxy.sol will use fallback() because the method function not exist in the contract and then delegate call to Store.sol, matching its method and call data.
+Use `forge test --match-test proxySetNumber` to test the fallback() function.
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Note that the state used in this is Proxy.sol state not Store.sol state, as I use constructor to assign `num = 20` but Proxy.sol will never have an access to this initial value.
+Use `forge test --match-test proxyAssertState` to assert the state between 2 contracts.

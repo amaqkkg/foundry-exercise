@@ -1,0 +1,3 @@
+[submodule "delegateCallProxy/lib/forge-std"]
+	path = delegateCallProxy/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

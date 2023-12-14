@@ -26,6 +26,14 @@ contract RaffleTest is Test {
     address public PLAYER = makeAddr("player");
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
 
+    modifier raffleEnteredAndTimePassed() {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+        _;
+    }
+
     function setUp() external {
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.run();
@@ -70,11 +78,10 @@ contract RaffleTest is Test {
         raffle.enterRaffle{value: entranceFee}();
     }
 
-    function testCantEnterWhenRaffleIsCalculating() public {
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + interval + 1);
-        vm.roll(block.number + 1);
+    function testCantEnterWhenRaffleIsCalculating()
+        public
+        raffleEnteredAndTimePassed
+    {
         raffle.performUpkeep("");
 
         vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
@@ -95,12 +102,11 @@ contract RaffleTest is Test {
         assert(!upkeepNeeded);
     }
 
-    function testCheckUpkeepReturnsFalseIfRaffleNotOpen() public {
+    function testCheckUpkeepReturnsFalseIfRaffleNotOpen()
+        public
+        raffleEnteredAndTimePassed
+    {
         // Arrange
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + interval + 1);
-        vm.roll(block.number + 1);
         raffle.performUpkeep("");
 
         // Act
@@ -122,13 +128,10 @@ contract RaffleTest is Test {
         assert(upkeepNeeded == false);
     }
 
-    function testCheckUpkeepReturnsTrueWhenParametersAreGood() public {
-        // Arrange
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + interval + 1);
-        vm.roll(block.number + 1);
-
+    function testCheckUpkeepReturnsTrueWhenParametersAreGood()
+        public
+        raffleEnteredAndTimePassed
+    {
         // Act
         (bool upkeepNeeded, ) = raffle.checkUpkeep("");
 
@@ -136,13 +139,10 @@ contract RaffleTest is Test {
         assert(upkeepNeeded);
     }
 
-    function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() public {
-        // Arrange
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + interval + 1);
-        vm.roll(block.number + 1);
-
+    function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue()
+        public
+        raffleEnteredAndTimePassed
+    {
         // Act / Assert
         raffle.checkUpkeep("");
     }
@@ -166,13 +166,10 @@ contract RaffleTest is Test {
     }
 
     // What if I need to test using the output of an event?
-    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public {
-        // Arrange
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
-        vm.warp(block.timestamp + interval + 1);
-        vm.roll(block.number + 1);
-
+    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId()
+        public
+        raffleEnteredAndTimePassed
+    {
         // Act
         vm.recordLogs();
         raffle.performUpkeep(""); // emit the requestId
